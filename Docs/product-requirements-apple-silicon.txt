@@ -1,0 +1,143 @@
+PRODUCT REQUIREMENTS — DNSSwitcher Apple Silicon Migration
+Version: 1.0.0
+Last Updated: 2026-06-11
+==============================================================
+
+
+1. PURPOSE AND STRATEGIC CONTEXT
+---------------------------------
+DNSSwitcher is a macOS menu bar utility (4 Swift source files) that lets users
+quickly switch DNS settings across named profiles. It was built in 2016 with
+Xcode 7.3.1, Swift 2.x, and CocoaPods 0.39.0. The resulting binary is Intel-only
+(x86_64). macOS has flagged that the app will stop working on Apple Silicon as
+Rosetta 2 support is phased out.
+
+The goal of this migration is to produce a notarized, code-signed universal binary
+(arm64 + x86_64) that runs natively on Apple Silicon Macs with no Rosetta layer,
+passes Gatekeeper, and can be distributed outside the App Store.
+
+Target user: the original developer and any Mac users on Apple Silicon hardware.
+
+
+2. USER STORIES
+---------------
+US-01  As an Apple Silicon Mac user, I want DNSSwitcher to run natively so that
+       I do not see macOS compatibility warnings and the app does not stop launching.
+
+US-02  As a developer distributing DNSSwitcher, I want the binary to be notarized
+       so that Gatekeeper allows users to open it without security prompts.
+
+US-03  As a developer, I want a repeatable release pipeline so that future versions
+       can be built, signed, notarized, and distributed without manual guesswork.
+
+
+3. FUNCTIONAL REQUIREMENTS
+---------------------------
+3.1 Dependency Modernisation (Phase 1)
+  - CocoaPods tooling updated to current stable version (1.x+).
+  - SwiftyJSON dependency updated from commit-pinned 2.3.2 to semver ~> 5.0.
+  - pod install completes without errors.
+  - SwiftyJSON.framework built for arm64 (verified with lipo).
+
+3.2 Swift Language Migration (Phase 1)
+  - All four source files compile cleanly in modern Xcode (16.x) with Swift 5/6.
+  - No use of removed Swift 2 APIs (NSTask, NSPipe, NSBundle, NSFileManager,
+    NSData, NSDate, NSAlertStyle, componentsSeparatedByString, etc.).
+  - @objc inference on selector-referenced methods restored explicitly.
+  - NSMenuDelegate and NSApplicationDelegate method signatures updated to Swift 5
+    conventions (external label _ convention).
+
+3.3 Universal Binary Build (Phase 1)
+  - ARCHS = $(ARCHS_STANDARD) set in both Debug and Release configurations.
+  - MACOSX_DEPLOYMENT_TARGET raised from 10.11 to 12.0 (Monterey).
+  - Successful xcodebuild on both arm64 and x86_64.
+  - lipo -info confirms fat binary containing both architectures.
+
+3.4 Notarization & Distribution (Phase 2)
+  - Developer ID Application certificate provisioned and installed.
+  - Code signing configured in Xcode project (DEVELOPMENT_TEAM, CODE_SIGN_IDENTITY).
+  - xcrun notarytool credentials stored in keychain.
+  - Full pipeline tested: archive → export → notarize → staple → Gatekeeper pass.
+  - Release process documented in RELEASING.md.
+
+
+4. NON-FUNCTIONAL REQUIREMENTS
+--------------------------------
+4.1  The app must launch without Rosetta on Apple Silicon hardware.
+4.2  The notarized binary must pass `spctl --assess --verbose` without errors.
+4.3  The release pipeline must be executable by a single developer without
+     interactive Xcode GUI steps (command-line reproducible).
+4.4  No new third-party dependencies may be introduced beyond updating SwiftyJSON.
+4.5  The deployment target (macOS 12) must not break any existing functionality
+     tested on macOS 12, 13, 14, and 15.
+
+
+5. API DEPENDENCIES AND INTEGRATION PLAN
+------------------------------------------
+API/Service               | Purpose                        | Phase
+--------------------------|--------------------------------|-------
+Apple Developer Program   | Code signing + notarization    | 2
+CocoaPods (CLI tool)      | Dependency management          | 1
+SwiftyJSON v5.x           | JSON parsing library           | 1
+xcrun notarytool          | Notarization submission        | 2
+xcrun stapler             | Staple notarization ticket     | 2
+
+Phase 1 behaviour: app builds and runs locally without notarization.
+Phase 2 behaviour: notarized, stapled binary ready for public distribution.
+
+
+6. CONTENT REQUIREMENTS
+------------------------
+- dnsswitcher.default.json: existing default config, no changes required.
+- RELEASING.md: new file documenting the archive/export/notarize/staple pipeline.
+
+
+7. GAPS IN THE CURRENT IMPLEMENTATION
+---------------------------------------
+Gap                              | Current State                    | Required
+---------------------------------|----------------------------------|----------------------------
+Architecture                     | x86_64 only (Intel)              | arm64 + x86_64 (universal)
+Swift version                    | Swift 2.x (Xcode 7.3.1)         | Swift 5/6 (Xcode 16.x)
+SwiftyJSON version               | 2.3.2 pinned to git commit       | ~> 5.0 semver range
+CocoaPods version                | 0.39.0                           | 1.x current stable
+Deployment target                | macOS 10.11 (El Capitan)         | macOS 12.0 (Monterey)
+Code signing                     | Mac Developer (dev cert only)    | Developer ID Application
+Notarization                     | None                             | xcrun notarytool pipeline
+Release documentation            | None                             | RELEASING.md
+
+
+8. SUCCESS METRICS
+-------------------
+Metric                                                    | Target
+----------------------------------------------------------|------------------
+lipo -info reports arm64 + x86_64 in final binary        | 100%
+xcodebuild exits 0 on Apple Silicon Mac                   | Yes
+spctl --assess --verbose passes on notarized binary       | Yes
+App launches without Rosetta on M-series Mac              | Yes
+No Swift compiler errors or warnings in migrated files    | 0 errors, 0 warnings
+
+
+9. OUT OF SCOPE
+----------------
+- App Store distribution (requires different signing, entitlements, sandboxing).
+- Adding new DNS features or UI changes.
+- Migrating from CocoaPods to Swift Package Manager (deferred — SPM migration
+  is a separate initiative that would remove the Pods/ directory entirely).
+- Updating the bundle identifier or version number.
+- CI/CD automation (GitHub Actions, Fastlane) — manual pipeline is sufficient
+  for this single-developer project.
+
+
+10. OWNER DECISIONS (RESOLVED)
+--------------------------------
+Q1: Raise deployment target to macOS 12 or higher?
+    DECISION: macOS 12 (Monterey). Drops support for Big Sur (11) and older, which
+    is acceptable given the app's user base and Apple Silicon hardware requirements.
+
+Q2: Universal binary or arm64-only?
+    DECISION: Universal binary (arm64 + x86_64). Ensures the app continues to work
+    for users on Intel Macs who may not have upgraded hardware yet.
+
+Q3: Keep CocoaPods or migrate to Swift Package Manager?
+    DECISION: Keep CocoaPods for this migration. SPM migration is deferred to avoid
+    scope creep — the goal is Apple Silicon support, not build system modernisation.

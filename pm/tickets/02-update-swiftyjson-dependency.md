@@ -1,0 +1,62 @@
+STATUS: blocked
+BLOCKED_BY_TICKET: Ticket 01
+
+TICKET 02: Update SwiftyJSON Dependency to v5.x
+Milestone: CocoaPods + SwiftyJSON Update
+Domain: Dependencies
+Priority: P0 — gates all Swift migration work; v5 has API differences from v2
+Effort: S
+PRD: Section 3.1 | Blockers: none
+
+## HANDOFF BLOCK
+PRD Section: 3.1 — Dependency Modernisation
+Why: The Podfile pins SwiftyJSON to a specific git commit (2a5b70f) from 2016 that
+     is Swift 2 only and lacks arm64 support. v5.x is the current release, supports
+     Swift 5/6, and ships with an XCFramework containing arm64 slices.
+
+## DESCRIPTION
+Update the Podfile to declare SwiftyJSON using a semver range (~> 5.0) instead of
+the hardcoded git commit pin. Add a platform declaration so CocoaPods generates
+arm64-compatible framework targets. Run `pod install` to regenerate the workspace
+and Podfile.lock.
+
+## ACCEPTANCE CRITERIA
+- [ ] `Podfile` declares `platform :osx, '12.0'` at the top
+- [ ] `Podfile` uses `pod 'SwiftyJSON', '~> 5.0'` (no `:git` or `:commit` pin)
+- [ ] `pod install` completes without errors
+- [ ] `Podfile.lock` records SwiftyJSON 5.x (not 2.3.2)
+- [ ] `DNSSwitcher.xcworkspace` is regenerated
+
+## IMPLEMENTATION DETAIL
+Replace the full contents of `Podfile` with:
+
+  platform :osx, '12.0'
+  use_frameworks!
+  target 'DNSSwitcher' do
+    pod 'SwiftyJSON', '~> 5.0'
+  end
+
+Then run:
+  pod install
+
+The `use_frameworks!` directive is required for Swift pods. The platform declaration
+tells CocoaPods to build for macOS 12, which enables $(ARCHS_STANDARD) to include
+arm64 in the Pods project.
+
+Notable API change from v2 → v5: the `JSON(data: Data)` initializer becomes a
+throwing initializer in v5 — `try JSON(data: data)`. The `rawString()` method
+signature also changes slightly. These are addressed in Tickets 05 and 06.
+
+## DEFERRED SCOPE
+- Pinning SwiftyJSON to a specific v5.x patch version for reproducible builds —
+  the semver range is sufficient for this migration; a stricter pin can be added
+  when setting up CI.
+
+## DEPENDENCIES
+Ticket 01 must be complete (CocoaPods >= 1.15 installed).
+
+## VERIFICATION
+1. Run `cat Podfile` — must show `platform :osx, '12.0'` and `pod 'SwiftyJSON', '~> 5.0'` with no commit pin.
+2. Run `cat Podfile.lock` — must show `SwiftyJSON (5.x.x)` under PODS.
+3. Confirm `DNSSwitcher.xcworkspace/` exists in the repo root.
+4. [Regression guard] Run `ls Pods/SwiftyJSON/` — source files must be present, confirming the pod was fetched correctly.
