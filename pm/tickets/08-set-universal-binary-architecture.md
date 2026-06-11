@@ -1,5 +1,6 @@
-STATUS: blocked
-BLOCKED_BY_TICKET: Ticket 07
+STATUS: done
+COMPLETED: 2026-06-11 | commit: 653a1bf
+COMMITS: 653a1bf
 
 TICKET 08: Set Universal Binary Architecture in Xcode Project
 Milestone: Xcode Project Settings
@@ -21,13 +22,13 @@ in project.pbxproj, and ensure `ONLY_ACTIVE_ARCH = NO` in Release so that archiv
 builds include both slices. Also ensure the Pods project inherits the same setting.
 
 ## ACCEPTANCE CRITERIA
-- [ ] `ARCHS = "$(ARCHS_STANDARD)";` present in both Debug and Release configs
+- [x] `ARCHS = "$(ARCHS_STANDARD)";` present in both Debug and Release configs
       in `DNSSwitcher.xcodeproj/project.pbxproj`
-- [ ] `ONLY_ACTIVE_ARCH = NO;` set in the Release build configuration
+- [x] `ONLY_ACTIVE_ARCH = NO;` set in the Release build configuration
       (Debug can remain YES for faster local builds)
-- [ ] `VALID_ARCHS` is not set (or removed if present) — it was deprecated in
+- [x] `VALID_ARCHS` is not set (or removed if present) — it was deprecated in
       Xcode 12 and conflicts with ARCHS_STANDARD
-- [ ] The Pods project target also does not have conflicting ARCHS overrides
+- [x] The Pods project target also does not have conflicting ARCHS overrides
 
 ## IMPLEMENTATION DETAIL
 In `project.pbxproj`, locate the two XCBuildConfiguration blocks for DNSSwitcher
@@ -64,3 +65,30 @@ Ticket 07 must be complete (clean compile confirmed).
 2. Run `grep "ONLY_ACTIVE_ARCH" DNSSwitcher.xcodeproj/project.pbxproj` — Release block must show `NO`.
 3. Run `grep "VALID_ARCHS" DNSSwitcher.xcodeproj/project.pbxproj` — must return empty (setting deprecated; must be absent).
 4. [Regression guard] Run `xcodebuild -workspace DNSSwitcher.xcworkspace -scheme DNSSwitcher -configuration Debug build` — must still exit 0 after the settings change.
+
+## RESOLUTION
+Commit: 653a1bf — feat: set universal binary architecture in project build settings (#008)
+
+Added three lines to `DNSSwitcher.xcodeproj/project.pbxproj`:
+- `ARCHS = "$(ARCHS_STANDARD)";` in the project-level Debug block (C9B374CB)
+- `ARCHS = "$(ARCHS_STANDARD)";` in the project-level Release block (C9B374CC)
+- `ONLY_ACTIVE_ARCH = NO;` in the project-level Release block (C9B374CC)
+
+Pods xcconfig files (`Pods-DNSSwitcher.debug.xcconfig`, `Pods-DNSSwitcher.release.xcconfig`)
+confirmed to have no conflicting ARCHS overrides. Debug build succeeded with signing
+bypassed (pre-existing code-sign identity requirement unrelated to this change).
+
+## SESSION AUDIT
+Captured: 2026-06-11
+
+### Decisions Made
+No owner decisions required — all implementation choices were specified in the ticket.
+The project-level blocks (C9B374CB/CC) were targeted rather than the target-level
+blocks (C9B374CE/CF) because project-level settings cascade to all targets and are
+the correct layer for this kind of global architecture setting.
+
+### Clarifications Provided
+No clarifications requested or provided.
+
+### Scope Changes
+No scope changes.
