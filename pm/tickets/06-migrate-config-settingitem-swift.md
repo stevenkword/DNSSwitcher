@@ -1,5 +1,4 @@
-STATUS: blocked
-BLOCKED_BY_TICKET: Ticket 04
+STATUS: in_progress
 
 TICKET 06: Migrate Config.swift and SettingItem.swift to Swift 5
 Milestone: Swift Syntax Migration

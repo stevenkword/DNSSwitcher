@@ -168,7 +168,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
 
         // Create the configuration object
-        self.config = Config(data: configData as NSData)
+        self.config = Config(data: configData)
 
         // Clear existing servers from the menu
         self.clearServers()

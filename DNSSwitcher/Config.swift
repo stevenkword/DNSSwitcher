@@ -14,9 +14,9 @@ class Config {
     var settings: [SettingItem]?
     var interface: String?
 
-    init(data: NSData) {
+    init(data: Data) {
         self.settings = []
-        let json = JSON(data: data)
+        let json = (try? JSON(data: data)) ?? JSON.null
 
         if let interface = json["interface"].string {
             self.interface = interface
@@ -47,15 +47,19 @@ class Config {
 extension Config {
 
     func export() -> String? {
-        var settings: [[String: AnyObject]] = []
+        var settings: [[String: Any]] = []
         for setting in self.settings! {
             settings.append(setting.export())
         }
-        let data: [String: AnyObject] = [
+        let data: [String: Any] = [
             "interface": self.interface!,
             "settings": settings
         ]
-        return JSON(data).rawString()
+        if let jsonData = try? JSONSerialization.data(withJSONObject: data),
+           let jsonString = String(data: jsonData, encoding: .utf8) {
+            return jsonString
+        }
+        return nil
     }
 
 }
