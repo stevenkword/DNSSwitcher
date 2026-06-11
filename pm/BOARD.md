@@ -1,6 +1,6 @@
 # Project Board — DNSSwitcher Apple Silicon Migration
 
-**Version:** 1.4.0
+**Version:** 1.5.0
 > Generated artifact. Regenerate by asking Claude "show me the board".
 > Last updated: 2026-06-11
 
@@ -35,8 +35,7 @@
 
 | # | Ticket | Milestone | Priority | Depends on |
 |---|--------|-----------|----------|------------|
-| 05 | Migrate AppDelegate.swift to Swift 5 | Swift Syntax Migration | P0 | #04 ✓ |
-| 06 | Migrate Config.swift and SettingItem.swift to Swift 5 | Swift Syntax Migration | P0 | #04 ✓ |
+| 06 | Migrate Config.swift and SettingItem.swift to Swift 5 | Swift Syntax Migration | P0 | #04 ✓, #05 ✓ |
 
 ---
 
@@ -56,6 +55,7 @@
 | 03 | Verify Pod Install and arm64 Framework Build | CocoaPods + SwiftyJSON Update | 2026-06-11 | pending |
 | 09 | Raise Deployment Target to macOS 12 | Xcode Project Settings | 2026-06-11 | pending |
 | 04 | Audit Source Files for Swift 2 Incompatibilities | Swift Syntax Migration | 2026-06-11 | — |
+| 05 | Migrate AppDelegate.swift to Swift 5 | Swift Syntax Migration | 2026-06-11 | pending |
 
 ---
 
