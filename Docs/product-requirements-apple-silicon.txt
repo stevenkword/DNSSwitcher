@@ -1,5 +1,5 @@
-PRODUCT REQUIREMENTS — DNSSwitcher Apple Silicon Migration
-Version: 1.0.0
+PRODUCT REQUIREMENTS — DNSSwitcher Apple Silicon Migration + Security Hardening
+Version: 2.0.0
 Last Updated: 2026-06-11
 ==============================================================
 
@@ -7,14 +7,19 @@ Last Updated: 2026-06-11
 1. PURPOSE AND STRATEGIC CONTEXT
 ---------------------------------
 DNSSwitcher is a macOS menu bar utility (4 Swift source files) that lets users
-quickly switch DNS settings across named profiles. It was built in 2016 with
-Xcode 7.3.1, Swift 2.x, and CocoaPods 0.39.0. The resulting binary is Intel-only
-(x86_64). macOS has flagged that the app will stop working on Apple Silicon as
-Rosetta 2 support is phased out.
+quickly switch DNS settings across named profiles. Originally created by Matt
+McNeeney in 2016 (github.com/mattmcneeney/DNSSwitcher) using Xcode 7.3.1, Swift
+2.x, and CocoaPods 0.39.0. The original binary is Intel-only (x86_64).
 
-The goal of this migration is to produce a notarized, code-signed universal binary
-(arm64 + x86_64) that runs natively on Apple Silicon Macs with no Rosetta layer,
-passes Gatekeeper, and can be distributed outside the App Store.
+This fork pursues two goals:
+
+  Phase 1 (complete): Produce a notarized, code-signed universal binary
+  (arm64 + x86_64) that runs natively on Apple Silicon Macs with no Rosetta
+  layer, passes Gatekeeper, and can be distributed outside the App Store.
+
+  Security hardening (complete): A deepsec scan identified one HIGH-severity
+  RCE, one MEDIUM path-traversal, and two stability bugs. All four were
+  confirmed true-positives and fixed in this fork.
 
 Target user: the original developer and any Mac users on Apple Silicon hardware.
 
@@ -29,6 +34,10 @@ US-02  As a developer distributing DNSSwitcher, I want the binary to be notarize
 
 US-03  As a developer, I want a repeatable release pipeline so that future versions
        can be built, signed, notarized, and distributed without manual guesswork.
+
+US-04  As a user, I want the app to be free of exploitable security vulnerabilities
+       so that a malicious config file or symlink cannot execute arbitrary code on
+       my machine.
 
 
 3. FUNCTIONAL REQUIREMENTS
@@ -53,7 +62,20 @@ US-03  As a developer, I want a repeatable release pipeline so that future versi
   - Successful xcodebuild on both arm64 and x86_64.
   - lipo -info confirms fat binary containing both architectures.
 
-3.4 Notarization & Distribution (Phase 2)
+3.4 Security Hardening (Phase 1 — complete)
+  - load_cmd feature removed from SettingItem and AppDelegate (HIGH — RCE via
+    ~/.dnsswitcher.json). The load_cmd JSON field and its Process() execution path
+    are deleted; no substitute is provided.
+  - Symlink guard added to createDefaultConfigFile (MEDIUM — path traversal). Before
+    writing, the destination is resolved via resolvingSymlinksInPath() and compared
+    to the expected path; a mismatch aborts the write.
+  - Bounds guard added to highlightEnabledInterface failover path (BUG — crash on
+    empty interface list). guard !self.interfaceMenu.items.isEmpty added before
+    items[0] subscript.
+  - stderr redirected to the same Pipe as stdout in runCommand (BUG — blank error
+    dialogs). task.standardError = pipe added alongside task.standardOutput = pipe.
+
+3.5 Notarization & Distribution (Phase 2)
   - Developer ID Application certificate provisioned and installed.
   - Code signing configured in Xcode project (DEVELOPMENT_TEAM, CODE_SIGN_IDENTITY).
   - xcrun notarytool credentials stored in keychain.
@@ -77,50 +99,61 @@ US-03  As a developer, I want a repeatable release pipeline so that future versi
 API/Service               | Purpose                        | Phase
 --------------------------|--------------------------------|-------
 Apple Developer Program   | Code signing + notarization    | 2
-CocoaPods (CLI tool)      | Dependency management          | 1
-SwiftyJSON v5.x           | JSON parsing library           | 1
+CocoaPods (CLI tool)      | Dependency management          | 1 (complete)
+SwiftyJSON v5.x           | JSON parsing library           | 1 (complete)
 xcrun notarytool          | Notarization submission        | 2
 xcrun stapler             | Staple notarization ticket     | 2
 
-Phase 1 behaviour: app builds and runs locally without notarization.
+Phase 1 behaviour: app builds and runs locally without notarization. (complete)
 Phase 2 behaviour: notarized, stapled binary ready for public distribution.
 
 
 6. CONTENT REQUIREMENTS
 ------------------------
 - dnsswitcher.default.json: existing default config, no changes required.
+- README.md: updated to document fork attribution, Apple Silicon changes, security
+  hardening, build instructions, and current config format (load_cmd removed).
 - RELEASING.md: new file documenting the archive/export/notarize/staple pipeline.
+  (Phase 2 — not yet written)
 
 
 7. GAPS IN THE CURRENT IMPLEMENTATION
 ---------------------------------------
-Gap                              | Current State                    | Required
----------------------------------|----------------------------------|----------------------------
-Architecture                     | x86_64 only (Intel)              | arm64 + x86_64 (universal)
-Swift version                    | Swift 2.x (Xcode 7.3.1)         | Swift 5/6 (Xcode 16.x)
-SwiftyJSON version               | 2.3.2 pinned to git commit       | ~> 5.0 semver range
-CocoaPods version                | 0.39.0                           | 1.x current stable
-Deployment target                | macOS 10.11 (El Capitan)         | macOS 12.0 (Monterey)
-Code signing                     | Mac Developer (dev cert only)    | Developer ID Application
-Notarization                     | None                             | xcrun notarytool pipeline
-Release documentation            | None                             | RELEASING.md
+Gap                              | Original State                   | Status
+---------------------------------|----------------------------------|---------------------------
+Architecture                     | x86_64 only (Intel)              | RESOLVED — arm64 + x86_64
+Swift version                    | Swift 2.x (Xcode 7.3.1)         | RESOLVED — Swift 5 (Xcode 16)
+SwiftyJSON version               | 2.3.2 pinned to git commit       | RESOLVED — ~> 5.0 semver
+CocoaPods version                | 0.39.0                           | RESOLVED — 1.16.2
+Deployment target                | macOS 10.11 (El Capitan)         | RESOLVED — macOS 12.0
+load_cmd RCE (HIGH)              | Unvalidated shell execution      | RESOLVED — feature removed
+Symlink on config write (MEDIUM) | Data.write follows symlinks      | RESOLVED — guard added
+Crash on empty interface list    | Unchecked items[0] subscript     | RESOLVED — guard added
+Blank error dialogs              | stderr not captured              | RESOLVED — stderr piped
+Code signing                     | Mac Developer (dev cert only)    | OPEN — Phase 2
+Notarization                     | None                             | OPEN — Phase 2
+Release documentation            | None                             | OPEN — Phase 2 (RELEASING.md)
 
 
 8. SUCCESS METRICS
 -------------------
-Metric                                                    | Target
-----------------------------------------------------------|------------------
-lipo -info reports arm64 + x86_64 in final binary        | 100%
-xcodebuild exits 0 on Apple Silicon Mac                   | Yes
-spctl --assess --verbose passes on notarized binary       | Yes
-App launches without Rosetta on M-series Mac              | Yes
-No Swift compiler errors or warnings in migrated files    | 0 errors, 0 warnings
+Metric                                                    | Target   | Status
+----------------------------------------------------------|----------|----------
+lipo -info reports arm64 + x86_64 in final binary        | 100%     | VERIFIED
+xcodebuild exits 0 on Apple Silicon Mac                   | Yes      | VERIFIED
+spctl --assess --verbose passes on notarized binary       | Yes      | Phase 2
+App launches without Rosetta on M-series Mac              | Yes      | VERIFIED
+No Swift compiler errors or warnings in migrated files    | 0 errors | VERIFIED
+deepsec scan: 0 open HIGH/MEDIUM findings                 | 0        | VERIFIED
+deepsec scan: 0 open BUG findings                         | 0        | VERIFIED
 
 
 9. OUT OF SCOPE
 ----------------
 - App Store distribution (requires different signing, entitlements, sandboxing).
 - Adding new DNS features or UI changes.
+- Re-introducing a load_cmd equivalent (removed as an exploitable RCE vector;
+  any future pre-flight hook capability requires a full security design review).
 - Migrating from CocoaPods to Swift Package Manager (deferred — SPM migration
   is a separate initiative that would remove the Pods/ directory entirely).
 - Updating the bundle identifier or version number.
