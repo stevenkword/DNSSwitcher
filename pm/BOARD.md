@@ -56,10 +56,10 @@
 | 08 | Set Universal Binary Architecture | Xcode Project Settings | 2026-06-11 | 653a1bf |
 | 10 | Build and Verify Universal Binary | Xcode Project Settings | 2026-06-11 | 55b4f29 |
 | 11 | Confirm Universal Binary with lipo | Xcode Project Settings | 2026-06-11 | 4be5b5f |
-| 17 | Remove loadCmd Arbitrary Code Execution | Security Hardening | 2026-06-11 | pending |
-| 18 | Symlink Guard on Config File Write | Security Hardening | 2026-06-11 | pending |
-| 19 | Bounds Guard in highlightEnabledInterface | Security Hardening | 2026-06-11 | pending |
-| 20 | Capture stderr in runCommand | Security Hardening | 2026-06-11 | pending |
+| 17 | Remove loadCmd Arbitrary Code Execution | Security Hardening | 2026-06-11 | 2cf634b |
+| 18 | Symlink Guard on Config File Write | Security Hardening | 2026-06-11 | 2cf634b |
+| 19 | Bounds Guard in highlightEnabledInterface | Security Hardening | 2026-06-11 | 2cf634b |
+| 20 | Capture stderr in runCommand | Security Hardening | 2026-06-11 | 2cf634b |
 
 ---
 
