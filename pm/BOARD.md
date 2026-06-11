@@ -55,7 +55,7 @@
 | 03 | Verify Pod Install and arm64 Framework Build | CocoaPods + SwiftyJSON Update | 2026-06-11 | pending |
 | 09 | Raise Deployment Target to macOS 12 | Xcode Project Settings | 2026-06-11 | pending |
 | 04 | Audit Source Files for Swift 2 Incompatibilities | Swift Syntax Migration | 2026-06-11 | — |
-| 05 | Migrate AppDelegate.swift to Swift 5 | Swift Syntax Migration | 2026-06-11 | pending |
+| 05 | Migrate AppDelegate.swift to Swift 5 | Swift Syntax Migration | 2026-06-11 | 7ca9103 |
 
 ---
 

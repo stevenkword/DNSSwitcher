@@ -1,5 +1,6 @@
 STATUS: done
-COMPLETED: 2026-06-11 | commit: pending
+COMPLETED: 2026-06-11 | commit: 7ca9103
+COMMITS: 7ca9103
 
 TICKET 05: Migrate AppDelegate.swift to Swift 5
 Milestone: Swift Syntax Migration
@@ -106,7 +107,7 @@ time (beyond the ticket's original AC list) were also applied:
   required by Swift 5's stricter IUO handling
 - `NSDate` comparison via `NSComparisonResult` replaced with native `Date > Date`
 
-Commit: pending
+Commit: 7ca9103 — feat: migrate AppDelegate.swift to Swift 5 (#005)
 
 ## SESSION AUDIT
 Captured: 2026-06-11
