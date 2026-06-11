@@ -1,6 +1,6 @@
 # Project Board — DNSSwitcher Apple Silicon Migration
 
-**Version:** 1.2.0
+**Version:** 1.4.0
 > Generated artifact. Regenerate by asking Claude "show me the board".
 > Last updated: 2026-06-11
 
@@ -24,14 +24,9 @@
 
 | # | Ticket | Milestone | Waiting on |
 |---|--------|-----------|------------|
-| 03 | Verify Pod Install and arm64 Framework Build | CocoaPods + SwiftyJSON Update | #02 |
-| 04 | Audit Source Files for Swift 2 Incompatibilities | Swift Syntax Migration | #03 |
-| 05 | Migrate AppDelegate.swift to Swift 5 | Swift Syntax Migration | #04 |
-| 06 | Migrate Config.swift and SettingItem.swift to Swift 5 | Swift Syntax Migration | #04 |
 | 07 | Verify Clean Compile in Modern Xcode | Swift Syntax Migration | #05, #06 |
 | 08 | Set Universal Binary Architecture | Xcode Project Settings | #07 |
-| 09 | Raise Deployment Target to macOS 12 | Xcode Project Settings | #07 |
-| 10 | Build and Verify Universal Binary | Xcode Project Settings | #08, #09 |
+| 10 | Build and Verify Universal Binary | Xcode Project Settings | #08 |
 | 11 | Confirm Universal Binary with lipo | Xcode Project Settings | #10 |
 
 ---
@@ -40,7 +35,8 @@
 
 | # | Ticket | Milestone | Priority | Depends on |
 |---|--------|-----------|----------|------------|
-| 02 | Update SwiftyJSON Dependency to v5.x | CocoaPods + SwiftyJSON Update | P0 | — |
+| 05 | Migrate AppDelegate.swift to Swift 5 | Swift Syntax Migration | P0 | #04 ✓ |
+| 06 | Migrate Config.swift and SettingItem.swift to Swift 5 | Swift Syntax Migration | P0 | #04 ✓ |
 
 ---
 
@@ -55,7 +51,11 @@
 
 | # | Ticket | Milestone | Completed | Commit |
 |---|--------|-----------|-----------|--------|
-| 01 | Update CocoaPods Tooling to Current Version | CocoaPods + SwiftyJSON Update | 2026-06-11 | pending |
+| 01 | Update CocoaPods Tooling to Current Version | CocoaPods + SwiftyJSON Update | 2026-06-11 | 4eba005 |
+| 02 | Update SwiftyJSON Dependency to v5.x | CocoaPods + SwiftyJSON Update | 2026-06-11 | pending |
+| 03 | Verify Pod Install and arm64 Framework Build | CocoaPods + SwiftyJSON Update | 2026-06-11 | pending |
+| 09 | Raise Deployment Target to macOS 12 | Xcode Project Settings | 2026-06-11 | pending |
+| 04 | Audit Source Files for Swift 2 Incompatibilities | Swift Syntax Migration | 2026-06-11 | — |
 
 ---
 

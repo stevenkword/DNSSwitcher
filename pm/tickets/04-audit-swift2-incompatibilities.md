@@ -1,5 +1,5 @@
-STATUS: blocked
-BLOCKED_BY_TICKET: Ticket 03
+STATUS: done
+COMPLETED: 2026-06-11
 
 TICKET 04: Audit Source Files for Swift 2 Incompatibilities
 Milestone: Swift Syntax Migration
@@ -90,3 +90,154 @@ Ticket 03 must be complete (SwiftyJSON v5 installed, so v5 API surface is known)
 2. Read Config.swift and confirm `NSData` and `[String: AnyObject]` are present.
 3. Read SettingItem.swift and confirm `[String: AnyObject]` is present.
 4. [Regression guard] Confirm DNSMenuItem.swift is unchanged — `git diff DNSSwitcher/DNSMenuItem.swift` should show no diff at this point.
+
+---
+
+## FINDINGS
+
+Audit completed 2026-06-11. All four files read in full.
+
+### AppDelegate.swift — 51 line edits required
+
+**A. Class renames (NS-prefix removal)**
+
+| Line | Swift 2 | Swift 5 |
+|------|---------|---------|
+| 23 | `var lastConfigFileUpdate: NSDate?` | `var lastConfigFileUpdate: Date?` |
+| 274 | `as? NSDate` | `as? Date` |
+| 327 | `NSTask()` | `Process()` |
+| 330 | `NSPipe()` | `Pipe()` |
+
+**B. Singleton / shared-instance access**
+
+| Line(s) | Swift 2 | Swift 5 |
+|---------|---------|---------|
+| 19, 310 | `NSStatusBar.systemStatusBar()` | `NSStatusBar.system` |
+| 36, 238, 248, 304 | `NSBundle.mainBundle()` | `Bundle.main` |
+| 41, 237, 239, 268 | `NSFileManager.defaultManager()` | `FileManager.default` |
+| 295, 305 | `NSWorkspace.sharedWorkspace()` | `NSWorkspace.shared` |
+
+**C. String method renames**
+
+| Line(s) | Swift 2 | Swift 5 |
+|---------|---------|---------|
+| 20 | `.stringByAppendingString("/.dnsswitcher.json")` | `+ "/.dnsswitcher.json"` |
+| 66, 119, 140 | `.componentsSeparatedByString("\n")` | `.components(separatedBy: "\n")` |
+| 68 | `.containsString("*")` | `.contains("*")` |
+
+**D. File and data I/O renames**
+
+| Line(s) | Swift 2 | Swift 5 |
+|---------|---------|---------|
+| 19 | `.statusItemWithLength(-1)` | `.statusItem(withLength: NSStatusItem.variableLength)` |
+| 41, 237 | `.fileExistsAtPath(_:)` | `.fileExists(atPath:)` |
+| 164, 249 | `NSData(contentsOfFile: path)` | `try? Data(contentsOf: URL(fileURLWithPath: path))` |
+| 238 | `Bundle.pathForResource(_:ofType:)` | `Bundle.path(forResource:ofType:)` |
+| 239 | `.copyItemAtPath(_:toPath:)` | `.copyItem(atPath:toPath:)` |
+| 250 | `NSData.writeToFile(_:atomically:)` | `Data.write(to: URL, options:)` (throws) |
+| 256 | `String.writeToFile(_:atomically:encoding:)` | `String.write(toFile:atomically:encoding:)` |
+| 268 | `.attributesOfItemAtPath(_:)` | `.attributesOfItem(atPath:)` |
+| 295 | `NSWorkspace.openFile(_:)` | `NSWorkspace.open(URL(fileURLWithPath:))` |
+| 305 | `NSWorkspace.openURL(_:)` | `NSWorkspace.open(_:)` |
+| 305 | `NSURL(string:)` | `URL(string:)` |
+
+**E. Encoding constants**
+
+| Line(s) | Swift 2 | Swift 5 |
+|---------|---------|---------|
+| 256, 335 | `NSUTF8StringEncoding` | `.utf8` (`String.Encoding.utf8`) |
+| 335 | `NSString(data: d, encoding: NSUTF8StringEncoding) as! String` | `String(data: d, encoding: .utf8)!` |
+
+**F. Attributes dictionary type change**
+
+| Line | Swift 2 | Swift 5 |
+|------|---------|---------|
+| 266 | `var configFileAttributes: [String: AnyObject]?` | `var configFileAttributes: [FileAttributeKey: Any]?` |
+| 274 | `configFileAttributes?[NSFileModificationDate]` | `configFileAttributes?[.modificationDate]` |
+
+**G. Menu item state enum**
+
+| Line(s) | Swift 2 | Swift 5 |
+|---------|---------|---------|
+| 80, 83, 91, 128, 131 | `item.state = 0` / `item.state = 1` | `item.state = .off` / `item.state = .on` |
+
+**H. Menu item enabled property**
+
+| Line(s) | Swift 2 | Swift 5 |
+|---------|---------|---------|
+| 196, 200 | `item.enabled = false` | `item.isEnabled = false` |
+
+**I. Enum renames**
+
+| Line(s) | Swift 2 | Swift 5 |
+|---------|---------|---------|
+| 143, 152 | `NSAlertStyle.CriticalAlertStyle` | `NSAlert.Style.critical` |
+| 155 | `NSAlertStyle.WarningAlertStyle` | `NSAlert.Style.warning` |
+| 286 | `NSComparisonResult.OrderedDescending` | `ComparisonResult.orderedDescending` |
+
+**J. Collection method renames**
+
+| Line | Swift 2 | Swift 5 |
+|------|---------|---------|
+| 177 | `.reverse()` (mutating, in-place) | `.reversed()` (returns new sequence; assign back or pass to init) |
+| 209 | `insertItem(_:atIndex:)` | `insertItem(_:at:)` |
+
+**K. Function signatures — missing `_` wildcard labels**
+
+In Swift 3+, the first argument no longer gets an implicit external label. Methods called via selectors or as delegate callbacks require `_` or the Objective-C selector will not match.
+
+| Line | Swift 2 | Swift 5 |
+|------|---------|---------|
+| 27 | `func applicationDidFinishLaunching(aNotification: NSNotification)` | `func applicationDidFinishLaunching(_ aNotification: Notification)` |
+| 94 | `func setInterface(item: NSMenuItem)` | `@objc func setInterface(_ item: NSMenuItem)` |
+| 137 | `func setDNSServers(item: DNSMenuItem)` | `@objc func setDNSServers(_ item: DNSMenuItem)` |
+| 220 | `func menuWillOpen(menu: NSMenu)` | `func menuWillOpen(_ menu: NSMenu)` |
+| 294 | `@IBAction func editServers(sender: AnyObject)` | `@IBAction func editServers(_ sender: AnyObject)` |
+| 298 | `@IBAction func restoreDefaultServers(sender: AnyObject)` | `@IBAction func restoreDefaultServers(_ sender: AnyObject)` |
+| 303 | `@IBAction func about(sender: AnyObject)` | `@IBAction func about(_ sender: AnyObject)` |
+| 309 | `@IBAction func quit(sender: AnyObject?)` | `@IBAction func quit(_ sender: AnyObject?)` |
+| 317 | `func showAlert(title: String, message: String, style: NSAlertStyle)` | `func showAlert(_ title: String, _ message: String, style: NSAlert.Style)` |
+| 326 | `func runCommand(args: [String])` | `func runCommand(_ args: [String])` |
+
+---
+
+### Config.swift — 5 change sites
+
+| Line | Category | Swift 2 | Swift 5 |
+|------|----------|---------|---------|
+| 17 | Type rename | `init(data: NSData)` | `init(data: Data)` |
+| 19 | SwiftyJSON v5 | `let json = JSON(data: data)` | `let json = (try? JSON(data: data)) ?? JSON.null` — v5 init is throwing |
+| 50 | Type annotation | `[[String: AnyObject]]` | `[[String: Any]]` |
+| 54 | Type annotation | `let data: [String: AnyObject]` | `let data: [String: Any]` |
+| 58 | SwiftyJSON v5 | `JSON(data).rawString()` | Unchanged API; verify `rawString()` still returns `String?` against installed v5 |
+
+SwiftyJSON v5 note: `JSON(data:)` now accepts `Data` (not `NSData`) and the initialiser throws — wrap in `try?`. The `rawString()` signature is the same in v5 but the default options differ; confirm it serialises correctly before closing Ticket 06.
+
+---
+
+### SettingItem.swift — 2 change sites
+
+| Line | Category | Swift 2 | Swift 5 |
+|------|----------|---------|---------|
+| 28 | Type annotation | `func export() -> [String: AnyObject]` | `func export() -> [String: Any]` |
+| 29 | Type annotation | `var data: [String: AnyObject]` | `var data: [String: Any]` |
+
+`json["servers"].arrayValue.map({ $0.string! })` on line 20 uses SwiftyJSON API that is identical in v5; no change needed.
+
+---
+
+### DNSMenuItem.swift — 0 changes
+
+Confirmed no deprecated or removed APIs. `git diff DNSSwitcher/DNSMenuItem.swift` shows no diff.
+
+---
+
+### Change count summary
+
+| File | Line edits |
+|------|-----------|
+| AppDelegate.swift | 51 |
+| Config.swift | 5 |
+| SettingItem.swift | 2 |
+| DNSMenuItem.swift | 0 |
+| **Total** | **58** |

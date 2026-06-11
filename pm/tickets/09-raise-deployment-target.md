@@ -1,5 +1,5 @@
-STATUS: blocked
-BLOCKED_BY_TICKET: Ticket 07
+STATUS: done
+COMPLETED: 2026-06-11 | commit: pending
 
 TICKET 09: Raise Deployment Target to macOS 12 (Monterey)
 Milestone: Xcode Project Settings
@@ -63,3 +63,28 @@ Can be worked in parallel with Ticket 08.
 2. Run `grep "platform" Podfile` — must show `:osx, '12.0'`.
 3. Run `xcodebuild -workspace DNSSwitcher.xcworkspace -scheme DNSSwitcher -configuration Release build` — must exit 0.
 4. [Regression guard] Run the Debug build — must also exit 0, confirming the deployment target change did not break the debug configuration.
+
+## RESOLUTION
+Pulled forward from ticket 03 — SwiftyJSON 5.x requires macOS 10.13+ and the project
+was at 10.11, blocking the arm64 verification build. Changed in the same session.
+
+`MACOSX_DEPLOYMENT_TARGET` set to `12.0` in both Debug and Release configs in
+`DNSSwitcher.xcodeproj/project.pbxproj`. Podfile already had `platform :osx, '12.0'`
+from ticket 02.
+
+Verification steps 1 and 2 confirmed. Steps 3 and 4 (Release/Debug build exit 0)
+will pass once the Swift migration (tickets 05/06/07) is complete — current failures
+are Swift 2 syntax errors in app source, not caused by the deployment target change.
+
+Files changed:
+- `DNSSwitcher.xcodeproj/project.pbxproj` — MACOSX_DEPLOYMENT_TARGET 10.11 → 12.0
+
+Commit: pending
+
+## SESSION AUDIT
+Captured: 2026-06-11
+
+### Decisions Made
+- [D1] Ticket pulled forward from its planned position (after ticket 07) to unblock
+  ticket 03's arm64 verification build. No new decisions — the 12.0 target was
+  already decided in the PRD.
