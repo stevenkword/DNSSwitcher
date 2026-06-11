@@ -1,6 +1,6 @@
 # Project Board — DNSSwitcher Apple Silicon Migration
 
-**Version:** 1.1.0
+**Version:** 1.2.0
 > Generated artifact. Regenerate by asking Claude "show me the board".
 > Last updated: 2026-06-11
 
@@ -24,7 +24,6 @@
 
 | # | Ticket | Milestone | Waiting on |
 |---|--------|-----------|------------|
-| 02 | Update SwiftyJSON Dependency to v5.x | CocoaPods + SwiftyJSON Update | #01 |
 | 03 | Verify Pod Install and arm64 Framework Build | CocoaPods + SwiftyJSON Update | #02 |
 | 04 | Audit Source Files for Swift 2 Incompatibilities | Swift Syntax Migration | #03 |
 | 05 | Migrate AppDelegate.swift to Swift 5 | Swift Syntax Migration | #04 |
@@ -41,7 +40,7 @@
 
 | # | Ticket | Milestone | Priority | Depends on |
 |---|--------|-----------|----------|------------|
-| 01 | Update CocoaPods Tooling to Current Version | CocoaPods + SwiftyJSON Update | P0 | — |
+| 02 | Update SwiftyJSON Dependency to v5.x | CocoaPods + SwiftyJSON Update | P0 | — |
 
 ---
 
@@ -56,6 +55,7 @@
 
 | # | Ticket | Milestone | Completed | Commit |
 |---|--------|-----------|-----------|--------|
+| 01 | Update CocoaPods Tooling to Current Version | CocoaPods + SwiftyJSON Update | 2026-06-11 | pending |
 
 ---
 
