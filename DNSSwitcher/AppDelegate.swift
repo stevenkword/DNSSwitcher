@@ -86,6 +86,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         /* Failover - if no interface has been selected, set
          * the first one */
         if !interfaceSelected {
+            guard !self.interfaceMenu.items.isEmpty else {
+                return
+            }
             self.config?.interface = self.interfaceMenu.items[0].title
             self.interfaceMenu.items[0].state = .on
         }
@@ -135,16 +138,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc func setDNSServers(_ item: DNSMenuItem) {
-        // Check if we have a load command to run
-        if let loadCmd = item.setting.loadCmd {
-            let command: [String] = loadCmd.components(separatedBy: " ")
-            let (result, output) = runCommand(command)
-            if result != 0 {
-                self.showAlert("Error", message: "Load command failed with exit code \(result): \(output)", style: .critical)
-                return
-            }
-        }
-
         // Change the DNS settings
         let command: [String] = [ "networksetup", "-setdnsservers", self.config!.interface! ] + item.setting.servers!
         let (result, output) = runCommand(command)
@@ -247,7 +240,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // Else copy the contents of the default to the existing file
         let defaultFilePath = Bundle.main.path(forResource: "dnsswitcher.default", ofType: "json")
         if let data = try? Data(contentsOf: URL(fileURLWithPath: defaultFilePath!)) {
-            try? data.write(to: URL(fileURLWithPath: self.configFilePath))
+            /*
+             * Symlink guard: resolve the real destination before writing. If configFilePath
+             * has been replaced by a symlink pointing elsewhere, writing would silently
+             * overwrite an arbitrary file. We compare the resolved path against the
+             * standardized (non-symlink-followed) path; a mismatch means a symlink is
+             * in play and we must abort rather than follow it.
+             */
+            let configURL = URL(fileURLWithPath: self.configFilePath)
+            let resolvedURL = configURL.resolvingSymlinksInPath()
+            let expectedURL = configURL.standardizedFileURL
+            guard resolvedURL == expectedURL else {
+                print("Security: config path resolves to a different location via symlink — refusing to overwrite target")
+                return
+            }
+            try? data.write(to: configURL)
         }
     }
 
@@ -330,6 +337,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         task.arguments = args
         let pipe = Pipe()
         task.standardOutput = pipe
+        task.standardError = pipe
         task.launch()
         task.waitUntilExit()
         let data = pipe.fileHandleForReading.readDataToEndOfFile()

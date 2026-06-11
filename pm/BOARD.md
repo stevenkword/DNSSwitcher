@@ -1,6 +1,6 @@
 # Project Board — DNSSwitcher Apple Silicon Migration
 
-**Version:** 2.0.0
+**Version:** 2.1.0
 > Generated artifact. Regenerate by asking Claude "show me the board".
 > Last updated: 2026-06-11
 
@@ -56,6 +56,10 @@
 | 08 | Set Universal Binary Architecture | Xcode Project Settings | 2026-06-11 | 653a1bf |
 | 10 | Build and Verify Universal Binary | Xcode Project Settings | 2026-06-11 | 55b4f29 |
 | 11 | Confirm Universal Binary with lipo | Xcode Project Settings | 2026-06-11 | 4be5b5f |
+| 17 | Remove loadCmd Arbitrary Code Execution | Security Hardening | 2026-06-11 | pending |
+| 18 | Symlink Guard on Config File Write | Security Hardening | 2026-06-11 | pending |
+| 19 | Bounds Guard in highlightEnabledInterface | Security Hardening | 2026-06-11 | pending |
+| 20 | Capture stderr in runCommand | Security Hardening | 2026-06-11 | pending |
 
 ---
 
@@ -67,6 +71,11 @@ confirmed (Ticket 03), begin the Swift migration: Tickets 05 and 06 can run in
 parallel (both depend only on Ticket 04's audit). Ticket 07 gates all architecture
 work. Tickets 08 and 09 can run in parallel after Ticket 07. Ticket 11 is the
 finish line — a passing lipo check confirms native Apple Silicon support.
+
+The Security Hardening milestone (Tickets 17–20) was completed in a single session
+following a deepsec scan. All four findings were confirmed true-positives. Ticket 17
+(loadCmd RCE) is the highest-impact fix — it eliminates a fully-exploitable code
+execution vector from the user config parsing path.
 
 ---
 
