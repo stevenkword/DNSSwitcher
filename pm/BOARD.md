@@ -1,6 +1,6 @@
 # Project Board — DNSSwitcher Apple Silicon Migration
 
-**Version:** 1.5.0
+**Version:** 1.6.0
 > Generated artifact. Regenerate by asking Claude "show me the board".
 > Last updated: 2026-06-11
 
@@ -24,7 +24,7 @@
 
 | # | Ticket | Milestone | Waiting on |
 |---|--------|-----------|------------|
-| 07 | Verify Clean Compile in Modern Xcode | Swift Syntax Migration | #05, #06 |
+| 07 | Verify Clean Compile in Modern Xcode | Swift Syntax Migration | #05 ✓, #06 ✓ |
 | 08 | Set Universal Binary Architecture | Xcode Project Settings | #07 |
 | 10 | Build and Verify Universal Binary | Xcode Project Settings | #08 |
 | 11 | Confirm Universal Binary with lipo | Xcode Project Settings | #10 |
@@ -35,7 +35,6 @@
 
 | # | Ticket | Milestone | Priority | Depends on |
 |---|--------|-----------|----------|------------|
-| 06 | Migrate Config.swift and SettingItem.swift to Swift 5 | Swift Syntax Migration | P0 | #04 ✓, #05 ✓ |
 
 ---
 
@@ -56,6 +55,7 @@
 | 09 | Raise Deployment Target to macOS 12 | Xcode Project Settings | 2026-06-11 | pending |
 | 04 | Audit Source Files for Swift 2 Incompatibilities | Swift Syntax Migration | 2026-06-11 | — |
 | 05 | Migrate AppDelegate.swift to Swift 5 | Swift Syntax Migration | 2026-06-11 | 7ca9103 |
+| 06 | Migrate Config.swift and SettingItem.swift to Swift 5 | Swift Syntax Migration | 2026-06-11 | d5495b0 |
 
 ---
 

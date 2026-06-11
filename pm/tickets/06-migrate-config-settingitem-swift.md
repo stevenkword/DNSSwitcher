@@ -1,4 +1,6 @@
-STATUS: in_progress
+STATUS: done
+COMPLETED: 2026-06-11 | commit: d5495b0
+COMMITS: d5495b0
 
 TICKET 06: Migrate Config.swift and SettingItem.swift to Swift 5
 Milestone: Swift Syntax Migration
@@ -19,13 +21,13 @@ are fewer than AppDelegate.swift but include a SwiftyJSON API change that requir
 careful handling: the JSON(data:) initializer is now throwing in v5.
 
 ## ACCEPTANCE CRITERIA
-- [ ] `NSData` replaced with `Data` in Config.swift init parameter
-- [ ] `[String: AnyObject]` replaced with `[String: Any]` in both files
-- [ ] SwiftyJSON v5 initializer used correctly in Config.swift
+- [x] `NSData` replaced with `Data` in Config.swift init parameter
+- [x] `[String: AnyObject]` replaced with `[String: Any]` in both files
+- [x] SwiftyJSON v5 initializer used correctly in Config.swift
       (`JSON(data)` where data is `Data`, not `NSData`)
-- [ ] Config.export() still produces valid JSON output
-- [ ] Both files compile with zero errors in Xcode 16.x
-- [ ] DNSMenuItem.swift is not modified (it requires no changes)
+- [x] Config.export() still produces valid JSON output
+- [x] Both files compile with zero errors in Xcode 16.x
+- [x] DNSMenuItem.swift is not modified (it requires no changes)
 
 ## IMPLEMENTATION DETAIL
 Config.swift — init change:
@@ -96,3 +98,23 @@ Can be worked in parallel with Ticket 05.
 2. Confirm `git diff DNSSwitcher/Config.swift | grep "^+" | grep "NSData"` returns empty (no NSData remains).
 3. Confirm `git diff DNSSwitcher/SettingItem.swift | grep "^+" | grep "AnyObject"` returns empty (no AnyObject remains).
 4. [Regression guard] Confirm DNSMenuItem.swift is untouched — `git diff DNSSwitcher/DNSMenuItem.swift` shows no changes.
+
+## RESOLUTION
+Commit: d5495b0 — feat: migrate Config.swift and SettingItem.swift to Swift 5 (#006)
+
+Files changed:
+- DNSSwitcher/Config.swift — NSData→Data in init, JSON(data:) wrapped with try?/JSON.null, AnyObject→Any in export(), JSONSerialization replaces SwiftyJSON for output
+- DNSSwitcher/SettingItem.swift — AnyObject→Any in export() return type and local dict
+- DNSSwitcher/AppDelegate.swift — removed leftover `as NSData` cast at Config(data:) call site
+
+## SESSION AUDIT
+Captured: 2026-06-11
+
+### Decisions Made
+- [D1] Config.export() rewrites JSON output using JSONSerialization (simpler alternative) rather than wrapping SwiftyJSON — chosen because configData is already Data at the call site, making the SwiftyJSON path redundant.
+
+### Scope Changes
+- [S1] Added: fix AppDelegate.swift:171 — `as NSData` cast was a leftover from Swift 2 that broke the call site once Config.init was updated to accept Data.
+
+### Clarifications Provided
+- [C1] The `as NSData` cast in AppDelegate was not listed in the ticket's implementation detail but surfaced as a compile error; fixed as part of this ticket rather than spawning a new one.
