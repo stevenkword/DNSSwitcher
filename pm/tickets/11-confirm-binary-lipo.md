@@ -1,5 +1,4 @@
-STATUS: blocked
-BLOCKED_BY_TICKET: Ticket 10
+STATUS: todo
 
 TICKET 11: Confirm Universal Binary with lipo
 Milestone: Xcode Project Settings

@@ -1,5 +1,6 @@
-STATUS: blocked
-BLOCKED_BY_TICKET: Ticket 08, Ticket 09
+STATUS: done
+COMPLETED: 2026-06-11 | commit: pending
+COMMITS: pending
 
 TICKET 10: Build and Verify Universal Binary
 Milestone: Xcode Project Settings
@@ -21,11 +22,11 @@ succeeds and that the resulting .xcarchive contains the application bundle. The
 binary inside the bundle is what Ticket 11 will inspect with lipo.
 
 ## ACCEPTANCE CRITERIA
-- [ ] `xcodebuild archive` exits with code 0 and produces `build/DNSSwitcher.xcarchive`
-- [ ] `DNSSwitcher.xcarchive/Products/Applications/DNSSwitcher.app` exists
-- [ ] `DNSSwitcher.xcarchive/Products/Applications/DNSSwitcher.app/Contents/MacOS/DNSSwitcher`
+- [x] `xcodebuild archive` exits with code 0 and produces `build/DNSSwitcher.xcarchive`
+- [x] `DNSSwitcher.xcarchive/Products/Applications/DNSSwitcher.app` exists
+- [x] `DNSSwitcher.xcarchive/Products/Applications/DNSSwitcher.app/Contents/MacOS/DNSSwitcher`
       exists (the Mach-O binary)
-- [ ] Build log shows no `error:` lines
+- [x] Build log shows no `error:` lines
 
 ## IMPLEMENTATION DETAIL
 Run the archive build from the repo root:
@@ -62,3 +63,27 @@ be complete.
 2. Run `ls build/DNSSwitcher.xcarchive/Products/Applications/DNSSwitcher.app/Contents/MacOS/` — must list the `DNSSwitcher` binary.
 3. Run `file build/DNSSwitcher.xcarchive/Products/Applications/DNSSwitcher.app/Contents/MacOS/DNSSwitcher` — must output `Mach-O universal binary with 2 architectures`.
 4. [Regression guard] Confirm the Debug build still succeeds: `xcodebuild -workspace DNSSwitcher.xcworkspace -scheme DNSSwitcher -configuration Debug build` exits 0.
+
+## RESOLUTION
+Archive build executed against DNSSwitcher.xcworkspace with signing disabled (no Developer
+ID cert yet — expected at this stage). xcodebuild produced `build/DNSSwitcher.xcarchive`
+with `** ARCHIVE SUCCEEDED **`. The `file` command confirmed the Mach-O binary contains
+both x86_64 and arm64 slices. Debug build with signing disabled also exits 0 — no
+compilation regression. The xcarchive is gitignored; no source files were modified.
+This ticket is verification-only — the commit records the ticket close metadata.
+
+Commit: pending
+
+## SESSION AUDIT
+Captured: 2026-06-11
+
+### Decisions Made
+- [D1] Code signing disabled (CODE_SIGN_IDENTITY="", CODE_SIGNING_REQUIRED=NO, CODE_SIGNING_ALLOWED=NO)
+  for the archive build — this path was already specified in the ticket's IMPLEMENTATION DETAIL
+  as the expected approach when no Developer ID cert is installed.
+
+### Clarifications Provided
+- None captured in this session.
+
+### Scope Changes
+- None.
