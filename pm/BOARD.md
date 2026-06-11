@@ -1,6 +1,6 @@
 # Project Board — DNSSwitcher Apple Silicon Migration
 
-**Version:** 2.1.0
+**Version:** 2.2.0
 > Generated artifact. Regenerate by asking Claude "show me the board".
 > Last updated: 2026-06-11
 
@@ -46,10 +46,10 @@
 | # | Ticket | Milestone | Completed | Commit |
 |---|--------|-----------|-----------|--------|
 | 01 | Update CocoaPods Tooling to Current Version | CocoaPods + SwiftyJSON Update | 2026-06-11 | 4eba005 |
-| 02 | Update SwiftyJSON Dependency to v5.x | CocoaPods + SwiftyJSON Update | 2026-06-11 | pending |
-| 03 | Verify Pod Install and arm64 Framework Build | CocoaPods + SwiftyJSON Update | 2026-06-11 | pending |
-| 09 | Raise Deployment Target to macOS 12 | Xcode Project Settings | 2026-06-11 | pending |
-| 04 | Audit Source Files for Swift 2 Incompatibilities | Swift Syntax Migration | 2026-06-11 | — |
+| 02 | Update SwiftyJSON Dependency to v5.x | CocoaPods + SwiftyJSON Update | 2026-06-11 | 3f41dbd |
+| 03 | Verify Pod Install and arm64 Framework Build | CocoaPods + SwiftyJSON Update | 2026-06-11 | 3f41dbd |
+| 09 | Raise Deployment Target to macOS 12 | Xcode Project Settings | 2026-06-11 | 3f41dbd |
+| 04 | Audit Source Files for Swift 2 Incompatibilities | Swift Syntax Migration | 2026-06-11 | 3f41dbd |
 | 05 | Migrate AppDelegate.swift to Swift 5 | Swift Syntax Migration | 2026-06-11 | 7ca9103 |
 | 06 | Migrate Config.swift and SettingItem.swift to Swift 5 | Swift Syntax Migration | 2026-06-11 | d5495b0 |
 | 07 | Verify Clean Compile in Modern Xcode | Swift Syntax Migration | 2026-06-11 | ce9bf05 |
